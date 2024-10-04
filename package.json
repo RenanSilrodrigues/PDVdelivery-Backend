@@ -1,0 +1,17 @@
+{
+  "name": "backend-pdvdelivery",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.0",
+    "mssql": "^11.0.1",
+    "node": "^20.18.0",
+    "pg": "^8.13.0"
+  }
+}
