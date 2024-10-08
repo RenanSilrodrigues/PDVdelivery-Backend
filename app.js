@@ -1,9 +1,10 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = 5000;
 const pool = require('./db');
 
-
+app.use(cors());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
@@ -46,12 +47,14 @@ app.post('/api/produtos', async (req, res) => {
         const {tipo, descricao, valor} = req.body;
         console.log(tipo, descricao, valor);
 
-        await pool.query(
+        const result = await pool.query(
             'INSERT INTO Produtos (Tipo, Descricao, Valor) VALUES ($1, $2, $3) RETURNING *',
                 [tipo, descricao, valor]
         );
 
-        res.json({message: 'Produto inserido com sucesso!'});
+        const produto = result.rows[0];
+
+        res.status(201).json({ produto });
 
         }catch (err) {
         console.error(err.message);
@@ -65,10 +68,14 @@ app.post('/api/clientes', async (req, res) => {
         const {telefone, cep, endereco, numero, bairro, complemento, nomecliente} = req.body;
         console.log(telefone, cep, endereco, numero, bairro, complemento, nomecliente);
 
-        await pool.query(
+        const result = await pool.query(
             'INSERT INTO Clientes (telefone, cep, endereco, numero, bairro, complemento, nome) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
                 [telefone, cep, endereco, numero, bairro, complemento, nomecliente]
         );
+
+        const cliente = result.rows[0];
+
+        res.status(201).json({ cliente });
 
         }catch (err) {
             console.error(err.message);
