@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 5000;
 const pool = require('./db');
@@ -84,6 +85,34 @@ app.post('/api/clientes', async (req, res) => {
         }
 });
 
+
+app.post('/cadastrar', async (req, res) => {
+    const { usuario, senha } = req.body;
+
+    try {
+        const hashedPassword = await bcrypt.hash(senha, 10);
+        await pool.query('INSERT INTO usuarios (usuario, senha) VALUES ($1, $2)', [usuario, hashedPassword]);
+        res.send()
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { usuario, senha } = req.body;
+
+    try {
+        const result = await pool.query('SELECT * FROM usuarios WHERE usuario = $1', [usuario]);
+        const user = result.rows[0];
+        if (user && await bcrypt.compare(senha, user.senha));
+        res.send()
+            // Senha correta, redirecionar para a página de sucesso
+            // Aqui você pode redirecionar para outra página
+            // res.redirect('/home');
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 
 app.listen(PORT, () => {
