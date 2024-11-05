@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 const pool = require('./db');
@@ -9,6 +10,7 @@ app.use(cors());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
+const SECRET_KEY = '22781';
 
 app.get('/api/produtos', async (req, res) => {
     try{
@@ -87,11 +89,11 @@ app.post('/api/clientes', async (req, res) => {
 
 
 app.post('/cadastrar', async (req, res) => {
-    const { usuario, senha } = req.body;
+    const { nome, username, telefone, password } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(senha, 10);
-        await pool.query('INSERT INTO usuarios (usuario, senha) VALUES ($1, $2)', [usuario, hashedPassword]);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await pool.query('INSERT INTO usuarios (nome, username, telefone, password) VALUES ($1, $2, $3, $4)', [nome, username, telefone, hashedPassword]);
         res.send()
     } catch (error) {
         console.error(error);
@@ -99,18 +101,27 @@ app.post('/cadastrar', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { usuario, senha } = req.body;
+    const { username, password } = req.body;
 
     try {
-        const result = await pool.query('SELECT * FROM usuarios WHERE usuario = $1', [usuario]);
+        const result = await pool.query('SELECT * FROM usuarios WHERE username = $1', [username]);
         const user = result.rows[0];
-        if (user && await bcrypt.compare(senha, user.senha));
-        res.send()
-            // Senha correta, redirecionar para a página de sucesso
-            // Aqui você pode redirecionar para outra página
-            // res.redirect('/home');
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Senha incorreta' });
+        }
+
+        const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '1h' });
+
+        res.json({ token });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Erro no servidor' });
     }
 });
 
