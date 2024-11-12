@@ -24,14 +24,25 @@ app.get('/api/produtos', async (req, res) => {
 });
 
 app.get('/api/clientes', async (req, res) => {
-    try{
-        const result = await pool.query('SELECT * FROM clientes');
+    const search = req.query.search; // Obtém o parâmetro de busca (se houver)
+
+    try {
+        let query = 'SELECT telefone, cep, endereco, numero, bairro, complemento, nome FROM clientes';
+        const values = [];
+
+        // Adiciona o filtro se `search` estiver presente
+        if (search) {
+            query += ' WHERE telefone ILIKE $1'; // Busca por similaridade (case-insensitive)
+            values.push(`%${search}%`); // Adiciona o valor do termo com %
+        }
+
+        const result = await pool.query(query, values); // Executa a consulta
         const clientes = result.rows;
         res.json(clientes);
-    }catch (err) {
+    } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Erro no servidor' });
-        }
+    }
 });
 
 app.delete('/api/produtos/:id', async (req, res) => {
