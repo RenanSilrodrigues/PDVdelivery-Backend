@@ -23,6 +23,19 @@ app.get('/api/produtos', async (req, res) => {
         }
 });
 
+app.get('/api/itens', async (req, res) => {
+    const descricao = req.query.descricao; // Recebe o parâmetro de busca
+  
+    try {
+      const query = 'SELECT descricao, valor FROM produtos WHERE descricao ILIKE $1';
+      const result = await pool.query(query, [`%${descricao}%`]); // Usa ILIKE para busca parcial, ignorando maiúsculas/minúsculas
+      res.json(result.rows);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: 'Erro no servidor' });
+    }
+  });
+
 app.get('/api/clientes', async (req, res) => {
     const search = req.query.search; // Obtém o parâmetro de busca (se houver)
 
