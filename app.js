@@ -34,7 +34,7 @@ app.get('/api/itens', async (req, res) => {
       console.error(err.message);
       res.status(500).json({ error: 'Erro no servidor' });
     }
-  });
+});
 
 app.get('/api/clientes', async (req, res) => {
     const search = req.query.search; // Obtém o parâmetro de busca (se houver)
@@ -88,6 +88,26 @@ app.post('/api/produtos', async (req, res) => {
         res.status(500).send('Erro no servidor');
 
         }
+});
+
+app.post('/api/pedidos', async (req, res) => {
+    try{
+        const {telefone, produtos, pagamento, total, data} = req.body;
+        console.log(req.body);
+
+        const result = await pool.query(
+            'INSERT INTO pedidos (telefone, produtos, pagamento, total, data) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [telefone, produtos, pagamento, total, data]
+        );
+
+        const pedidos = result.rows[0];
+
+        res.status(201).json({ pedidos });
+
+        }catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erro no servidor');
+    }
 });
 
 app.post('/api/clientes', async (req, res) => {
