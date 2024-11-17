@@ -24,11 +24,11 @@ app.get('/api/produtos', async (req, res) => {
 });
 
 app.get('/api/itens', async (req, res) => {
-    const descricao = req.query.descricao; // Recebe o parâmetro de busca
+    const descricao = req.query.descricao; 
   
     try {
       const query = 'SELECT descricao, valor FROM produtos WHERE descricao ILIKE $1';
-      const result = await pool.query(query, [`%${descricao}%`]); // Usa ILIKE para busca parcial, ignorando maiúsculas/minúsculas
+      const result = await pool.query(query, [`%${descricao}%`]); 
       res.json(result.rows);
     } catch (err) {
       console.error(err.message);
@@ -36,20 +36,30 @@ app.get('/api/itens', async (req, res) => {
     }
 });
 
+app.get('/api/pedidos', async (req, res) => {
+    try{
+        const result = await pool.query('SELECT * FROM pedidos');
+        const pedidos = result.rows;
+        res.json(pedidos);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Erro no servidor' });
+        }
+});
+
 app.get('/api/clientes', async (req, res) => {
-    const search = req.query.search; // Obtém o parâmetro de busca (se houver)
+    const search = req.query.search;
 
     try {
         let query = 'SELECT telefone, cep, endereco, numero, bairro, complemento, nome FROM clientes';
         const values = [];
 
-        // Adiciona o filtro se `search` estiver presente
         if (search) {
-            query += ' WHERE telefone ILIKE $1'; // Busca por similaridade (case-insensitive)
-            values.push(`%${search}%`); // Adiciona o valor do termo com %
+            query += ' WHERE telefone ILIKE $1';
+            values.push(`%${search}%`);
         }
 
-        const result = await pool.query(query, values); // Executa a consulta
+        const result = await pool.query(query, values);
         const clientes = result.rows;
         res.json(clientes);
     } catch (err) {
