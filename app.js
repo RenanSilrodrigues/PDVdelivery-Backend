@@ -47,6 +47,23 @@ app.get('/api/pedidos', async (req, res) => {
         }
 });
 
+app.get('/api/ultimo-pedido', async (req, res) => {
+    try{
+        const query = 'SELECT * FROM pedidos ORDER BY data DESC LIMIT 1;';
+        const { rows } = await pool.query(query);
+
+        if (rows.length > 0) {
+            res.json(rows[0]);
+          } else {
+            res.status(404).json({ message: 'Nenhum pedido encontrado' });
+          }
+        } catch (error) {
+          console.error('Erro ao buscar o último pedido:', error);
+          res.status(500).json({ error: 'Erro no servidor' });
+        }
+});
+
+
 app.get('/api/clientes', async (req, res) => {
     const search = req.query.search;
 
